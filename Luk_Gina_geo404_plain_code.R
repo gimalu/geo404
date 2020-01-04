@@ -42,9 +42,9 @@ aug.shp = as(aug.shp, "Spatial")
 
 aug.center = gCentroid(aug.shp)  # Get center point
 
+# Plot Postal Codes ----------------------------------------------------
 aug.map = leaflet() %>% setView(lng = aug.center$x, lat = aug.center$y, zoom = 11)
 
-# Plot Postal Codes ----------------------------------------------------
 aug.map %>% addTiles() %>% addPolygons(data=aug.shp, weight=1, col = 'red',
                                  smoothFactor = 0.5,
                                  opacity = 0.4, fillOpacity = 0.5,
@@ -226,6 +226,8 @@ execGRASS(cmd = "v.net.salesman", input = "aoi_points_connected",
 grass.route = readVECT("tsp_result") %>%
   st_as_sf() %>%
   st_geometry()
+
+saveRDS(grass.route, "./data/grass_route.rds")
 
 grass.route.map  =  leaflet(dm.data) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
