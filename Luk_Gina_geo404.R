@@ -119,3 +119,45 @@ dm.map  =  leaflet(dm.data) %>%
              icon=dm.icon[1])%>% 
   addLegend("bottomright", colors= dm.icon[1], labels="DM'", title="DM Shops um Augsburg")
 dm.map
+
+# ------------------------------------------------------------------------------
+# TSP with "TSP"
+# ------------------------------------------------------------------------------
+# Environmental --------------------------------------------------------
+# Extract Coordinates
+coords.mx = as.matrix(data.frame(long=as.numeric(dm.data$x), lat=as.numeric(dm.data$y)))
+
+# Compute distance from each DM market
+dist.mx = dist(coords.mx)
+
+# Construct a TSP object
+tsp.ins = tsp_instance(coords.mx, dist.mx )
+
+rm(coords.mx)
+rm(dist.mx)
+# Example --------------------------------------------------------------
+example.tour = run_solver(tsp.ins, method="nn")  # Construct a TSP with `Nearest Neighbour`
+summary(example.tour)
+
+# Plot ---------------------------------------------------------
+autoplot(tsp.ins, example.tour)
+
+# Try Different Algorithms ---------------------------------------------
+tsp.methods = c("nearest_insertion", "farthest_insertion",
+                "cheapest_insertion", "arbitrary_insertion", "nn", "repetitive_nn",
+                "2-opt")
+
+tsp.tours = sapply(tsp.methods, FUN=function(m) 
+  run_solver(tsp.ins, method=m), simplify= FALSE)
+
+tsp.results = c(sapply(tsp.tours, FUN=attr, "tour_length"))
+
+dotchart(tsp.results,
+         xlab = "Tour length", main="Heuristic Solutions")
+
+# Select the algorithm with the lowest tour length
+tsp.tour = run_solver(tsp.ins, method=names(tsp.results)[which.min(tsp.results)])
+summary(tsp.tour)
+
+# Plot ---------------------------------------------------------
+autoplot(tsp.ins, tsp.tour)
