@@ -161,3 +161,24 @@ summary(tsp.tour)
 
 # Plot ---------------------------------------------------------
 autoplot(tsp.ins, tsp.tour)
+
+# ------------------------------------------------------------------------------
+# TSP with "osrmTrip"
+# ------------------------------------------------------------------------------
+osrm.tour = osrmTrip(loc = dm.sf)
+
+osrm.tour.map  =  leaflet(dm.data) %>%
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addMarkers(lng=~x, lat=~y, 
+             popup=paste0("<b>Adresse: </b>" , "<br>", 
+                          dm.data$street, "<br>",
+                          dm.data$plz, " ", dm.data$city, "<br>",
+                          "<b>Parkplatzsituation: </b>", dm.data$parking),
+             icon=dm.icon[1])%>% 
+  addPolylines(data=trips[[1]]$trip, color="#ff2500", weight=3, opacity=3) %>% 
+  
+  addLegend("bottomright", colors= dm.icon[1], labels="DM'", title="DM Shops um Augsburg")
+osrm.tour.map
+
+osrm.tour[[1]]$summary
+
