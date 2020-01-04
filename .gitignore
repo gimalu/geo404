@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+GRASS_TEMP/*
+junk
