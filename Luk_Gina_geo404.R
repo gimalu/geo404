@@ -10,7 +10,6 @@ library("stringr")
 library("rgeos")
 library("rgdal")
 library("ggplot2")
-library("ggmap")
 library("leaflet")
 
 # URI ------------------------------------------------------------------
@@ -18,6 +17,7 @@ URI.plz = "https://www.suche-postleitzahl.org/download_files/public/plz-gebiete.
 
 # Destination Paths ----------------------------------------------------
 dest.plz = tempfile("plz-gebiete", fileext = c(".zip"))  # Create a temporary file
+dest.dm = "./data/dm/dm_loc_json.rds"
 
 # ------------------------------------------------------------------------------
 # Postal Codes
@@ -44,4 +44,60 @@ aug.map %>% addTiles() %>% addPolygons(data=aug.shp, weight=1, col = 'red',
                                  highlightOptions = highlightOptions(color = "white", 
                                                                      weight = 2,
                                                                      bringToFront = TRUE))
+
+# ------------------------------------------------------------------------------
+# DM Location
+# ------------------------------------------------------------------------------
+# Scrab Locations ------------------------------------------------------
+url = paste0(
+  "https://www.dm.de/cms/restws/stores/find?requestingCountry=DE&", 
+  "countryCodes=DE%2CAT%2CBA%2CBG%2CSK%2CRS%2CHR%2CCZ%2CRO%2CSI%", 
+  "2CHU%2CMK&mandantId=100", 
+  "&bounds=", aug.center$y - 0.5, 
+  "%2C", aug.center$x - 0.5,
+  "%7C", aug.center$y + 0.5, 
+  "%2C", aug.center$x + 0.5, 
+  "&before=false&after=false&morningHour=9&eveningHour=18&_", 
+  "=1479236790492")
+
+dm.json = jsonlite::fromJSON(url)
+saveRDS(dm.json, dest.dm)
+dm.json = readRDS(dest.dm)
+
+# Cleaning Data -------------------------------------------------------
+temp.address = list()
+temp.x = list()
+temp.y = list()
+
+for (i in 1:length(dm.json$address$street)){
+  temp.address[[i]] = matrix(unlist(strsplit(dm.json$address$street[i], ",")), ncol=2, byrow=TRUE)[1]
+  temp.y[[i]] = dm.json$location[[i]][1]
+  temp.x[[i]] = dm.json$location[[i]][2]
+}
+
+temp.address = unlist(temp.address)
+temp.x = unlist(temp.x)
+temp.y = unlist(temp.y)
+
+# Generate DM Data ----------------------------------------------------
+dm.data = data.frame(city=dm.json$address$city, street=temp.address, 
+                     plz=as.numeric(dm.json$address$plz), x=as.numeric(temp.x), 
+                     y=as.numeric(temp.y),
+                     parking=dm.json$parkingTooltip)
+
+
+# Plot DM Shops around Augsburg ---------------------------------------
+dm.icon = makeIcon("./data/icon/dm_icon_20.png", iconWidth=20, iconHeight=20)
+
+dm.map  =  leaflet(dm.data) %>%
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addMarkers(lng=~x, lat=~y, 
+             popup=paste0("<b>Adresse: </b>" , "<br>", 
+                          dm.data$street, "<br>",
+                          dm.data$plz, " ", dm.data$city, "<br>",
+                          "<b>Parkplatzsituation: </b>", dm.data$parking), 
+             icon=dm.icon[1])%>% 
+  addLegend("bottomright", colors= dm.icon[1], labels="DM'", title="DM Shops um Augsburg")
+dm.map
+
 
