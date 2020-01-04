@@ -1,0 +1,36 @@
+---
+title: "DM location and Traveling Salesman Problems: Assignment 1"
+author: "Gina Lukaszczyk"
+date: "4 1 2020"
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: tango
+    number_sections: true
+    fig_caption: yes
+---
+<link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.5/css/jquery.dataTables.min.css">
+<script src="http://code.jquery.com/jquery-2.1.2.min.js"></script>
+<script src="http://cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript">
+         $(document).ready(function() {
+             $("table").DataTable();
+         } );
+</script>
+
+```{r GlobalOptions, echo=FALSE}
+options(knitr.duplicate.label = 'allow')
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+# This chunk automatically generates a file .R version of this script when running within knitr.
+input  = knitr::current_input()  # filename of input document
+output = paste(tools::file_path_sans_ext(input), 'R', sep = '.')
+knitr::purl(input,output,documentation=1,quiet=T)
+```
+
