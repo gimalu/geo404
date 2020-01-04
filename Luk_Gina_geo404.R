@@ -182,3 +182,61 @@ osrm.tour.map
 
 osrm.tour[[1]]$summary
 
+# ------------------------------------------------------------------------------
+# TSP with "GRASS"
+# ------------------------------------------------------------------------------
+b_box = st_bbox(dm.sf)
+aoi.streets = opq(b_box) %>%
+  add_osm_feature(key = "highway") %>%
+  osmdata_sf() %>%
+  `[[`("osm_lines")
+
+aoi.streets = dplyr::select(aoi.streets, osm_id)
+
+initGRASS(gisBase = URI.grass,
+          home = "./data/grass",
+          gisDbase = "./data/grass", location = "augsburg", 
+          mapset = "PERMANENT", override = TRUE)
+
+execGRASS("g.proj", flags = c("c", "quiet"), 
+          proj4 = st_crs(aoi.streets)$proj4string)
+
+b_box = st_bbox(aoi.streets) 
+execGRASS("g.region", flags = c("quiet"), 
+          n = as.character(b_box["ymax"]), s = as.character(b_box["ymin"]), 
+          e = as.character(b_box["xmax"]), w = as.character(b_box["xmin"]), 
+          res = "1")
+
+writeVECT(SDF = as(aoi.streets, "Spatial"), vname = "aoi_streets")
+writeVECT(SDF = dm.sf, vname = "dm")
+
+# clean street network
+execGRASS(cmd = "v.clean", input = "aoi_streets", output = "aoi_streets_clean",
+          tool = "break", flags = "overwrite")
+
+# connect points with street network
+execGRASS(cmd = "v.net", input = "aoi_streets_clean", output = "aoi_points_connected", 
+          points = "dm", operation = "connect", threshold = 0.001,
+          flags = c("overwrite", "c"))
+
+execGRASS(cmd = "v.net.salesman", input = "aoi_points_connected",
+          output = "tsp_result", center_cats = paste0("1-", nrow(dm.sf)),
+          flags = c("overwrite"))
+
+grass.route = readVECT("tsp_result") %>%
+  st_as_sf() %>%
+  st_geometry()
+
+grass.route.map  =  leaflet(dm.data) %>%
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addMarkers(lng=~x, lat=~y, 
+             popup=paste0("<b>Adresse: </b>" , "<br>", 
+                          dm.data$street, "<br>",
+                          dm.data$plz, " ", dm.data$city, "<br>",
+                          "<b>Parkplatzsituation: </b>", dm.data$parking),
+             icon=dm.icon[1])%>% 
+  addPolylines(data=grass.route, color="#ff2500", weight=3, opacity=3) %>% 
+  
+  addLegend("bottomright", colors= dm.icon[1], labels="DM'", title="DM Shops um Augsburg")
+grass.route.map
+
