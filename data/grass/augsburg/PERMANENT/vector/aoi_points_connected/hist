@@ -1,11 +1,11 @@
-COMMAND: VINOGR~1 input="./data/grass\augsburg\PERMANENT\.tmp/unknown\524.0" layer="aoi_streets" output="aoi_streets" min_area=0.0001 type="" snap=-1
+COMMAND: VINOGR~1 input="./data/grass\augsburg\PERMANENT\.tmp/unknown\800.0" layer="aoi_streets" output="aoi_streets" min_area=0.0001 type="" snap=-1
 GISDBASE: ./data/grass
-LOCATION: augsburg MAPSET: PERMANENT USER: Gina DATE: Sat Jan 04 21:53:19 2020
+LOCATION: augsburg MAPSET: PERMANENT USER: Gina DATE: Sun Jan 05 16:38:53 2020
 ---------------------------------------------------------------------------------
 COMMAND: VCLEAN~1 --overwrite input="aoi_streets" layer="-1" type="point,line,boundary,centroid,area,face,kernel" output="aoi_streets_clean" tool="break"
 GISDBASE: ./data/grass
-LOCATION: augsburg MAPSET: PERMANENT USER: Gina DATE: Sat Jan 04 22:00:52 2020
+LOCATION: augsburg MAPSET: PERMANENT USER: Gina DATE: Sun Jan 05 22:30:21 2020
 ---------------------------------------------------------------------------------
 COMMAND: VNET~1 --overwrite -c input="aoi_streets_clean" points="dm" output="aoi_points_connected" operation="connect" arc_layer="1" arc_type="line,boundary" node_layer="2" threshold=0.001 turn_layer="3" turn_cat_layer="4"
 GISDBASE: ./data/grass
-LOCATION: augsburg MAPSET: PERMANENT USER: Gina DATE: Sat Jan 04 22:01:03 2020
+LOCATION: augsburg MAPSET: PERMANENT USER: Gina DATE: Sun Jan 05 22:30:35 2020
